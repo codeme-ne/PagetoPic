@@ -27,4 +27,7 @@ jobs:
         run: pnpm run lint
 
       - name: Tests
-        run: pnpm run test -- --run
+        run: pnpm run test:run
+
+      - name: Coverage
+        run: pnpm run test:coverage

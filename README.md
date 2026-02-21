@@ -1,93 +1,182 @@
-# URL → Image Generator
+# URL -> Image Generator
 
-Turn any website into a beautiful image using modern AI. Open‑source and self‑hostable.
+Turn any website into a production-ready visual in one flow: scrape content, generate a prompt, render an image.
 
-## Technologies
-
-- **Firecrawl**: Website content extraction
-- **Google Gemini 2.5 Flash**: AI prompt generation (streaming)
-- **Google Imagen 4**: Image generation via Fal.ai
-- **NextAuth + Resend**: Passwordless email sign‑in
-- **Upstash Redis**: Auth adapter + rate limiting
+![Demo](public/demo/url-to-image-demo.gif)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcodeme-ne%2FGemini-Image-und-Prompt&env=FIRECRAWL_API_KEY,GEMINI_API_KEY,FAL_KEY,UPSTASH_REDIS_REST_URL,UPSTASH_REDIS_REST_TOKEN,AUTH_RESEND_KEY,EMAIL_FROM,STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET,STRIPE_PRICE_STARTER,STRIPE_PRICE_CREATOR,STRIPE_PRICE_PRO&envDescription=API%20keys%20required%20to%20run%20this%20application)
 
-## Setup
+## Target Users
 
-### Required Environment Variables
+- Solo founders and marketers who need fast social visuals from landing pages or blog posts.
+- Agencies turning client URLs into campaign image variants.
+- Engineers building AI content tooling with explicit cost and abuse controls.
 
-| Service | Purpose | Env | Get Key |
-|---------|---------|-----|---------|
-| Firecrawl | Website content extraction | `FIRECRAWL_API_KEY` | https://www.firecrawl.dev/app/api-keys |
-| Google Gemini | Prompt generation | `GEMINI_API_KEY` or `GOOGLE_API_KEY` | https://aistudio.google.com/apikey |
-| Fal.ai | Imagen 4 access | `FAL_KEY` | https://fal.ai/dashboard/keys |
-| Upstash Redis | Auth adapter + rate limiting | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | https://upstash.com |
-| Resend | Email provider for NextAuth | `AUTH_RESEND_KEY`, `EMAIL_FROM` | https://resend.com |
-| Stripe | Credit packs + webhook | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` | https://dashboard.stripe.com/apikeys |
+## Example Inputs and Outputs
 
-### Quick Start
+### Example 1: SaaS Landing Page -> Clean Product Hero
+- Input URL: `https://example-saas.com`
+- Intent: Hero image for LinkedIn launch post
+- Output summary: clean UI composition, product headline, high-contrast CTA framing
 
-1. Clone this repository
-2. Create a `.env.local` file with your environment variables:
+### Example 2: Blog Post -> Editorial Illustration
+- Input URL: `https://example.com/blog/ai-ops-playbook`
+- Intent: Newsletter cover visual
+- Output summary: conceptual illustration matching article theme and tone
+
+### Example 3: Event Page -> Promotional Poster
+- Input URL: `https://example-events.com/summit-2026`
+- Intent: Event promo asset for X/Instagram
+- Output summary: date/location emphasis, visual hierarchy optimized for social feeds
+
+## Architecture
+
+High-level flow:
+
+```text
+URL Input -> /api/scrape -> /api/gemini -> /api/imagen4 -> Rendered Image
+                 |              |               |
+                 |              |               +-> Credits debit/refund
+                 |              +-> Streaming prompt output
+                 +-> SSRF checks + provider fallback
+
+Billing:
+Stripe Checkout -> /api/webhooks/stripe -> awardCredits(user)
+```
+
+Detailed notes: [docs/architecture.md](docs/architecture.md)
+
+## Technologies
+
+- Firecrawl + Jina Reader fallback for URL extraction
+- Google Gemini for prompt generation
+- Fal.ai Imagen4 for image generation
+- NextAuth + Resend for passwordless auth
+- Upstash Redis for credits, rate limiting, and idempotency
+- Stripe for credit-pack billing
+
+## Environment Variables
+
+### Required
+
+- `FIRECRAWL_API_KEY`
+- `GEMINI_API_KEY` (or `GOOGLE_API_KEY`)
+- `FAL_KEY`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `AUTH_RESEND_KEY`
+- `EMAIL_FROM`
+- `NEXTAUTH_SECRET`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_CREATOR`, `STRIPE_PRICE_PRO`
+
+### Optional
+
+- `NEXTAUTH_URL`, `NEXT_PUBLIC_APP_URL`
+- `GEMINI_MODEL_ID`
+- `SCRAPER_PROVIDER` (`jina`, `firecrawl`, `auto`)
+- `TRUSTED_PROXY`, `DEBUG_CREDITS`
+- `CREDITS_STARTER`, `CREDITS_CREATOR`, `CREDITS_PRO`
+- `STRIPE_COUPON_STARTER7`
+
+Reference file: [`.env.example`](.env.example)
+
+## Quickstart
+
+1. Install dependencies:
+   ```bash
+   pnpm install --frozen-lockfile
    ```
-   FIRECRAWL_API_KEY=your_firecrawl_key
-   GEMINI_API_KEY=your_gemini_key
-   FAL_KEY=your_fal_key
-
-   # For production - enables rate limiting (50 req/IP/day per endpoint)
-   UPSTASH_REDIS_REST_URL=your_upstash_url
-   UPSTASH_REDIS_REST_TOKEN=your_upstash_token
-
-   # Authentication (NextAuth + Resend)
-   AUTH_RESEND_KEY=re_...
-   EMAIL_FROM=hello@example.com
-   # For production URLs
-   # NEXTAUTH_URL=https://your-domain.com
-
-   # Stripe (credit packs + webhook)
-   STRIPE_SECRET_KEY=sk_live_or_test
-   STRIPE_WEBHOOK_SECRET=whsec_...
-   STRIPE_PRICE_STARTER=price_...
-   STRIPE_PRICE_CREATOR=price_...
-   STRIPE_PRICE_PRO=price_...
-   # Optional: override default credits per pack
-   # CREDITS_STARTER=20
-   # CREDITS_CREATOR=60
-   # CREDITS_PRO=200
+2. Create env file and fill required keys:
+   ```bash
+   cp .env.example .env.local
    ```
-3. Install dependencies: `npm install` or `yarn install`
-4. Run the development server: `npm run dev` or `yarn dev`
+3. Start local dev server:
+   ```bash
+   pnpm run dev
+   ```
+4. Run the smoke test in another terminal:
+   ```bash
+   curl -X POST http://localhost:3000/api/check-env
+   ```
+5. Open `http://localhost:3000`, sign in, run one URL -> image flow.
 
-## Security & Usage Limits
+## Smoke Test
 
-- **Rate limiting**: 50 requests/IP/day per endpoint (production, Upstash)
-- **Credits**: 1 credit = 1 image; first‑time users get 1 free credit
-- **Daily cap**: 100 images per user per day
+Expected smoke test signals:
+- `/api/check-env` returns no missing required keys in your setup.
+- `/api/scrape` accepts a public URL and returns markdown.
+- `/api/gemini` streams prompt output.
+- `/api/imagen4` returns image payload when credits are available.
 
-## Billing & Credits
+## Testing
 
-- Stripe Checkout for one‑time credit packs (Starter, Creator, Pro)
-- Stripe webhook credits the user after `checkout.session.completed`
-- Up to 3 regenerations per prompt (1 initial + 3)
+```bash
+pnpm run test:run
+pnpm run test:coverage
+```
 
-## How It Works
+Test suites include:
+- Unit tests for `lib/` and URL validation rules
+- Integration-like tests for credits, webhook validation, scrape/prompt pipeline glue
 
-Enter a website URL → Extract content with Firecrawl → Generate prompt with Gemini 2.5 Flash → Select style → Create image with Imagen 4 → Download
+See [tests/README.md](tests/README.md) for strategy and scope.
 
-### Built-in Image Styles
+## Troubleshooting
 
-The app ships with several preset style prompts (click “View Prompt” in Step 2):
+1. Missing API key / 500 config error:
+   - Verify `.env.local` keys and restart dev server.
+2. Stripe webhook signature failures:
+   - Ensure `STRIPE_WEBHOOK_SECRET` matches your Stripe CLI/webhook endpoint secret.
+3. Unauthorized responses:
+   - Confirm NextAuth sign-in completed and session cookie exists.
+4. Rate-limit errors in development:
+   - Check Upstash vars; without valid Redis config the app fails open locally.
+5. Out-of-credits / daily-cap reached:
+   - Trigger checkout flow or adjust local credit env values for test mode.
 
-- GHIBLI
-- LEGO
-- CLAYMATION
-- Clean vector art illustration Logo
-- Whimsical illustration
-- traditional Sumi-e ink wash style
+## Known Limitations
+
+- Prompt quality depends on source page quality and scrape completeness.
+- Some dynamic pages yield partial extraction results.
+- No offline mode; external provider availability affects generation.
+
+## Failure Modes
+
+- Upstream provider outages (Firecrawl, Gemini, Fal.ai, Stripe)
+- Invalid webhook signatures or stale webhook retries
+- Aggressive input content causing prompt degradation
+- Unexpected URL patterns blocked by SSRF safeguards
+
+## Cost Notes
+
+- Image generation consumes credits (1 credit per image request).
+- Daily per-user cap is enforced in API (`/api/imagen4`).
+- Running with paid providers means variable usage costs per request volume.
+
+## Privacy and Security Notes
+
+- Secrets belong in `.env.local` only; never commit real keys.
+- Stripe webhook events are signature-verified before credit award.
+- URL inputs are validated to reduce SSRF and metadata endpoint abuse.
+- Rate limiting + credits + regen caps protect against automated abuse.
+
+## Contributing
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Issue Templates](.github/ISSUE_TEMPLATE)
+- [PR Template](.github/PULL_REQUEST_TEMPLATE.md)
+
+## Security
+
+- [Security Policy](SECURITY.md)
+- Use GitHub Security Advisories for private vulnerability reporting.
 
 ## Open Source
 
-This project is open-source: https://github.com/codeme-ne/Gemini-Image-und-Prompt
+Repository: https://github.com/codeme-ne/Gemini-Image-und-Prompt
 
 ## License
 
