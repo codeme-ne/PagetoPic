@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,7 +178,7 @@ export default function UrlToImagePage() {
     if (styleParam) {
       // Convert style name to style ID
       const matchingStyle = imageStyleOptions.find(
-        style => style.name.toLowerCase().replace(/ /g, '-').replace(/-ink-wash/g, '-ink-wash') === styleParam
+        style => style.name.toLowerCase().replace(/ /g, '-') === styleParam
       );
       if (matchingStyle) {
         setSelectedStyleId(matchingStyle.id);
@@ -217,7 +217,6 @@ export default function UrlToImagePage() {
   const [isScrapingComplete, setIsScrapingComplete] = useState(false);
   const [thinking, setThinking] = useState<string[]>([]);
   const [isThinking, setIsThinking] = useState(false);
-  const thinkingRef = useRef<HTMLDivElement>(null);
   const [expandedPromptId, setExpandedPromptId] = useState<string | null>(null);
   const [stylePrompt, setStylePrompt] = useState<string>("");
   // API keys are provided by infrastructure; no client-side API key handling needed
@@ -570,12 +569,6 @@ The final prompt should read naturally as ONE complete instruction, not a list o
     }
   };
 
-  useEffect(() => {
-    if (thinking.length > 0) {
-      thinkingRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [thinking]);
-
   const resetProcess = () => {
     // Clear any saved prompts in session storage
     sessionStorage.removeItem('savedPrompt');
@@ -666,7 +659,6 @@ The final prompt should read naturally as ONE complete instruction, not a list o
 
   return (
   <div className="px-4 sm:container py-6 sm:py-10 mx-auto font-sans" style={{ maxWidth: 720 }}>
-      <>
           {/* Credits + plans moved to global header */}
           <UrlToImageProgressBar activeStep={currentStep} />
 
@@ -738,6 +730,7 @@ The final prompt should read naturally as ONE complete instruction, not a list o
                           alt={styleOption.alt}
                           width={200}
                           height={150}
+                          sizes="200px"
                           className="object-cover w-full h-full group-hover:opacity-80 transition-opacity"
                         />
                         {selectedStyleId === styleOption.id && (
@@ -824,7 +817,7 @@ The final prompt should read naturally as ONE complete instruction, not a list o
                       value={websiteContent || ''}
                       onChange={(e) => setWebsiteContent(e.target.value)}
                       className="w-full h-60 p-3 text-xs border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring dark:bg-zinc-700 dark:border-zinc-600 dark:text-gray-300 resize-none"
-                      placeholder="Hier wird der gescabte Inhalt angezeigt und kann bearbeitet werden..."
+                      placeholder="Scraped content will appear here and can be edited..."
                     />
                   </div>
                 </div>
@@ -1028,7 +1021,6 @@ The final prompt should read naturally as ONE complete instruction, not a list o
               </div>
             )}
           </div>
-        </>
     </div>
   );
 }

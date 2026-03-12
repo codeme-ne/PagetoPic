@@ -13,6 +13,11 @@ import {
   incrementRegen,
 } from '@/lib/credits';
 
+// Configure fal client once at module level
+fal.config({
+  credentials: process.env.FAL_KEY,
+});
+
 interface FalImage {
   url: string;
   content_type?: string;
@@ -67,17 +72,11 @@ export async function POST(request: NextRequest) {
   // Grant free trial (1 credit) once per user on first use
   await ensureTrial(userId, 1);
 
-  const apiKey = process.env.FAL_KEY;
-
-  if (!apiKey) {
+  if (!process.env.FAL_KEY) {
     return NextResponse.json({
       error: 'API configuration error. Please try again later or contact support.'
     }, { status: 500 });
   }
-  
-  fal.config({
-    credentials: apiKey,
-  });
 
   try {
     const body = await request.json();

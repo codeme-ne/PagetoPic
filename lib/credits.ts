@@ -5,7 +5,6 @@ const redis = Redis.fromEnv();
 
 // Structured logging helper for credit operations audit trail
 type CreditLogData = {
-  timestamp: string;
   operation: string;
   userId: string;
   amount?: number;
@@ -56,7 +55,6 @@ export async function awardCredits(userId: string, amount: number): Promise<numb
   const newBal = await redis.incrby(kCredits(userId), amount);
 
   logCreditOp({
-    timestamp: "",
     operation: "awardCredits",
     userId,
     amount,
@@ -72,7 +70,6 @@ export async function ensureTrial(userId: string, trialCredits = 2): Promise<{ g
     const bal = await awardCredits(userId, trialCredits);
 
     logCreditOp({
-      timestamp: "",
       operation: "ensureTrial",
       userId,
       granted: true,
@@ -84,7 +81,6 @@ export async function ensureTrial(userId: string, trialCredits = 2): Promise<{ g
   const bal = await getCredits(userId);
 
   logCreditOp({
-    timestamp: "",
     operation: "ensureTrial",
     userId,
     granted: false,
@@ -116,7 +112,6 @@ export async function tryDebit(
       const remaining = await getCredits(userId);
 
       logCreditOp({
-        timestamp: "",
         operation: "tryDebit",
         userId,
         amount,
@@ -159,7 +154,6 @@ export async function tryDebit(
     const currentBalance = await getCredits(userId);
 
     logCreditOp({
-      timestamp: "",
       operation: "tryDebit",
       userId,
       amount,
@@ -179,7 +173,6 @@ export async function tryDebit(
   const dailyRemaining = Number.isFinite(dailyCap) ? Math.max(0, (dailyCap as number) - used) : undefined;
 
   logCreditOp({
-    timestamp: "",
     operation: "tryDebit",
     userId,
     amount,
@@ -194,7 +187,6 @@ export async function refund(userId: string, amount: number): Promise<number> {
   const newBal = await awardCredits(userId, amount);
 
   logCreditOp({
-    timestamp: "",
     operation: "refund",
     userId,
     amount,

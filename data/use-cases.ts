@@ -111,7 +111,7 @@ export const useCases: UseCase[] = [
       ]
     },
     testimonial: {
-      quote: "PageTopic has revolutionized our content creation workflow. What used to take hours now takes minutes.",
+      quote: "PagetoPic has revolutionized our content creation workflow. What used to take hours now takes minutes.",
       author: "Sarah Chen",
       role: "Head of Digital Marketing",
       company: "TechStart GmbH",
@@ -190,7 +190,7 @@ export const useCases: UseCase[] = [
       ]
     },
     testimonial: {
-      quote: "As a blogger, PageTopic gives me the visual superpowers I never had. My posts have never looked better!",
+      quote: "As a blogger, PagetoPic gives me the visual superpowers I never had. My posts have never looked better!",
       author: "Marcus Weber",
       role: "Tech Blogger",
       company: "DigitalTrends.de",
@@ -269,7 +269,7 @@ export const useCases: UseCase[] = [
       ]
     },
     testimonial: {
-      quote: "We've transformed our entire product visualization strategy with PageTopic. ROI was visible within weeks.",
+      quote: "We've transformed our entire product visualization strategy with PagetoPic. ROI was visible within weeks.",
       author: "Lisa Müller",
       role: "E-Commerce Director",
       company: "Fashion Forward AG",
@@ -348,7 +348,7 @@ export const useCases: UseCase[] = [
       ]
     },
     testimonial: {
-      quote: "PageTopic is my secret weapon for social media. Our engagement rates have never been higher!",
+      quote: "PagetoPic is my secret weapon for social media. Our engagement rates have never been higher!",
       author: "Tom Schmidt",
       role: "Social Media Lead",
       company: "StartupHub Berlin",

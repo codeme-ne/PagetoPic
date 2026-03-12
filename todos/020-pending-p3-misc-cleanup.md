@@ -28,15 +28,16 @@ Various small quality issues identified across the codebase.
 13. **No prompt length limit** on /api/gemini and /api/imagen4
 
 ## Acceptance Criteria
-- [ ] German placeholder replaced with English
-- [ ] No-op regex removed
-- [ ] Dead ref/effect removed or attached
-- [ ] Empty fragment removed
-- [ ] `timestamp` removed from logCreditOp call sites
-- [ ] `fal.config()` moved to module level
+- [x] German placeholder replaced with English
+- [x] No-op regex removed
+- [x] Dead ref/effect removed or attached
+- [x] Empty fragment removed
+- [x] `timestamp` removed from logCreditOp call sites
+- [x] `fal.config()` moved to module level
 - [ ] Unused dependencies audited and removed
 
 ## Work Log
 | Date | Action | Learnings |
 |------|--------|-----------|
 | 2026-03-03 | Identified across all review agents | |
+| 2026-03-12 | Implemented items 1-8 (German placeholder, no-op regex, dead thinkingRef+useEffect, empty fragment, timestamp placeholders, fal.config module-level, PageTopic→PagetoPic testimonials, sizes prop) | |
